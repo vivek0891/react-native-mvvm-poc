@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from "react";
 import {
   View,
@@ -20,10 +18,20 @@ import { styles } from "./UserScreen.styles";
 type Props = NativeStackScreenProps<RootStackParamList, "Users">;
 
 export default function UserScreen({ navigation }: Props) {
-  const { status, filteredUsers, query, setQuery, load, errorMessage } =
-    useUsersViewModel();
+  const {
+    status,
+    displayedUsers,
+    query,
+    setQuery,
+    load,
+    refresh,
+    loadMore,
+    errorMessage,
+    isRefreshing,
+    isLoadingMore,
+    hasMore,
+  } = useUsersViewModel();
 
-  // Load only once on screen mount
   useEffect(() => {
     load();
   }, [load]);
@@ -46,7 +54,7 @@ export default function UserScreen({ navigation }: Props) {
         returnKeyType="search"
       />
 
-      {/* Error box (doesn't push list too much) */}
+      {/* Error box */}
       {isError ? (
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>
@@ -61,14 +69,18 @@ export default function UserScreen({ navigation }: Props) {
 
       {/* List */}
       <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => String(item.id)} // IMPORTANT: stable key
+        data={displayedUsers}
+        keyExtractor={(item) => String(item.id)}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === "ios" ? "on-drag" : "none"}
         removeClippedSubviews={true}
         initialNumToRender={12}
         windowSize={10}
         contentContainerStyle={styles.listContent}
+        refreshing={isRefreshing}
+        onRefresh={refresh}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
         ListEmptyComponent={
           isLoading ? null : (
             <View style={styles.emptyBox}>
@@ -78,11 +90,18 @@ export default function UserScreen({ navigation }: Props) {
             </View>
           )
         }
-        // Loader as footer so it does NOT change layout height and cause "jumping"
         ListFooterComponent={
-          isLoading ? (
+          isLoadingMore ? (
             <View style={styles.loaderBox}>
               <ActivityIndicator />
+            </View>
+          ) : hasMore ? (
+            <View style={styles.footerBox}>
+              <Text style={styles.footerText}>Scroll to load more</Text>
+            </View>
+          ) : displayedUsers.length > 0 ? (
+            <View style={styles.footerBox}>
+              <Text style={styles.footerText}>No more users</Text>
             </View>
           ) : null
         }
@@ -97,6 +116,7 @@ export default function UserScreen({ navigation }: Props) {
               <Text numberOfLines={1} style={styles.name}>
                 {item.name}
               </Text>
+
               <Text numberOfLines={1} style={styles.email}>
                 {item.email}
               </Text>

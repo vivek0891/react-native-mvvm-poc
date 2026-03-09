@@ -34,6 +34,9 @@ export async function fetchUsers(): Promise<User[]> {
     email: u.email,
     phone: u.phone,
     website: u.website,
+    username: u.username,
+    address: u.address,
+    company: u.company
   }));
 }
 

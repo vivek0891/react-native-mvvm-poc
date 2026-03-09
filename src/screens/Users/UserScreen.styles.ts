@@ -76,4 +76,14 @@ export const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
+
+  footerBox: {
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+
+  footerText: {
+    fontSize: 13,
+    color: "#888",
+  },
 });
